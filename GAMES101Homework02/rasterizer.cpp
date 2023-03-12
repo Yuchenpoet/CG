@@ -49,11 +49,11 @@ static float insideTriangle(float x, float y, const Vector3f* _v)
     }
     return true;
 }
-//ÓÃÓÚ¼ÆËãÈı½ÇĞÎµÄÖØĞÄ×ø±ê
-//v±íÊ¾Èı½ÇĞÎµÄ¶¥µã£¬xºÍy·Ö±ğ±íÊ¾µ±Ç°ÏñËØµÄºá×İ×ø±ê
+//ç”¨äºè®¡ç®—ä¸‰è§’å½¢çš„é‡å¿ƒåæ ‡
+//vè¡¨ç¤ºä¸‰è§’å½¢çš„é¡¶ç‚¹ï¼Œxå’Œyåˆ†åˆ«è¡¨ç¤ºå½“å‰åƒç´ çš„æ¨ªçºµåæ ‡
 static std::tuple<float, float, float> computeBarycentric2D(float x, float y, const Vector3f* v)
 {
-    //c1¡¢c2¡¢c3·Ö±ğ±íÊ¾Èı½ÇĞÎ¶¥µãµÄÈ¨ÖØ£¬Í¨¹ı¼ÆËãÈı½ÇĞÎ¶¥µãµÄÈ¨ÖØ£¬¿ÉÒÔ¼ÆËã³öµ±Ç°ÏñËØµÄzÖµ²åÖµ(Éî¶ÈÖµ£©
+    //c1ã€c2ã€c3åˆ†åˆ«è¡¨ç¤ºä¸‰è§’å½¢é¡¶ç‚¹çš„æƒé‡ï¼Œé€šè¿‡è®¡ç®—ä¸‰è§’å½¢é¡¶ç‚¹çš„æƒé‡ï¼Œå¯ä»¥è®¡ç®—å‡ºå½“å‰åƒç´ çš„zå€¼æ’å€¼(æ·±åº¦å€¼ï¼‰
     float c1 = (x*(v[1].y() - v[2].y()) + (v[2].x() - v[1].x())*y + v[1].x()*v[2].y() - v[2].x()*v[1].y()) / (v[0].x()*(v[1].y() - v[2].y()) + (v[2].x() - v[1].x())*v[0].y() + v[1].x()*v[2].y() - v[2].x()*v[1].y());
     float c2 = (x*(v[2].y() - v[0].y()) + (v[0].x() - v[2].x())*y + v[2].x()*v[0].y() - v[0].x()*v[2].y()) / (v[1].x()*(v[2].y() - v[0].y()) + (v[0].x() - v[2].x())*v[1].y() + v[2].x()*v[0].y() - v[0].x()*v[2].y());
     float c3 = (x*(v[0].y() - v[1].y()) + (v[1].x() - v[0].x())*y + v[0].x()*v[1].y() - v[1].x()*v[0].y()) / (v[2].x()*(v[0].y() - v[1].y()) + (v[1].x() - v[0].x())*v[2].y() + v[0].x()*v[1].y() - v[1].x()*v[0].y());
@@ -111,13 +111,13 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
 //MSAA
 //Screen space rasterization
 void rst::rasterizer::rasterize_triangle(const Triangle& t) {
-    auto v = t.toVector4();//toVector4µÄ×÷ÓÃÊÇ½«Èı½ÇĞÎµÄÈı¸ö¶¥µã×ø±ê×ª»»ÎªËÄÎ¬ÏòÁ¿£¬ÒÔ±ãÓÚ¼ÆËãÖØĞÄ×ø±ê¡£
+    auto v = t.toVector4();//toVector4çš„ä½œç”¨æ˜¯å°†ä¸‰è§’å½¢çš„ä¸‰ä¸ªé¡¶ç‚¹åæ ‡è½¬æ¢ä¸ºå››ç»´å‘é‡ï¼Œä»¥ä¾¿äºè®¡ç®—é‡å¿ƒåæ ‡ã€‚
     std::vector<float> a{ 0.25,0.25,0.75,0.75,0.25 };
     Vector3f color; //color at each vertex;
     float alpha, beta, gamma, lmin = INT_MAX, rmax = INT_MIN, tmax = INT_MIN, bmin = INT_MAX, mindep = INT_MAX, eid;
-    //Ïà±ÈÔ­Ê¼´úÂë¶àÁËÒ»¸öeid£¬¼´Ë÷ÒıÊı
+    //ç›¸æ¯”åŸå§‹ä»£ç å¤šäº†ä¸€ä¸ªeidï¼Œå³ç´¢å¼•æ•°
     // TODO : Find out the bounding box of current triangle.
-    for (auto& k : v) {//ÕÒµ½bounding boxµÄ±ß½ç×ø±ê
+    for (auto& k : v) {//æ‰¾åˆ°bounding boxçš„è¾¹ç•Œåæ ‡
         lmin = int(std::min(lmin, k.x()));
         rmax = std::max(rmax, k.x()); rmax = rmax == int(rmax) ? int(rmax) - 1 : rmax;
         tmax = std::max(tmax, k.y()); tmax = tmax == int(tmax) ? int(tmax) - 1 : tmax;
@@ -125,27 +125,28 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     }
     // iterate through the pixel and find if the current pixel is inside the triangle
     for (float i = lmin; i <= rmax; i++) {
-        for (float j = bmin; j <= tmax; j++) {//±éÀú°üÎ§ºĞ
-            //ÔÚµÚÒ»ÖØÑ­»·Àï²»¶Ï¸üĞÂÏÂÃæÁ½¸ö±äÁ¿µÄ¸³Öµ£¬±£Ö¤½øÈëµÚ¶şÖØÑ­»·Ê±Öµ²»±ä
-            mindep = INT_MAX; //¼ÇÂ¼µ±Ç°ÏñËØµÄ×îĞ¡Éî¶ÈÖµ
-            eid = get_index(i, j) * 4; //¼ÆËãµ±Ç°ÏñËØµÄË÷Òı£¬ÒòÎªÃ¿¸öÏñËØÓĞËÄ¸öÑù±¾£¬ËùÒÔ³ËÒÔ4
-            for (int k = 0; k < 4; k++) {//±éÀúÏñËØµÄÃ¿¸öÑù±¾
-                if (insideTriangle(i + a[k], j + a[k + 1], t.v)) {//Èç¹ûÑù±¾ÔÚÈı½ÇĞÎÄÚ
+        for (float j = bmin; j <= tmax; j++) {//éå†åŒ…å›´ç›’
+            //åœ¨ç¬¬ä¸€é‡å¾ªç¯é‡Œä¸æ–­æ›´æ–°ä¸‹é¢ä¸¤ä¸ªå˜é‡çš„èµ‹å€¼ï¼Œä¿è¯è¿›å…¥ç¬¬äºŒé‡å¾ªç¯æ—¶å€¼ä¸å˜
+            mindep = INT_MAX; //è®°å½•å½“å‰åƒç´ çš„æœ€å°æ·±åº¦å€¼
+            eid = get_index(i, j) * 4; //è®¡ç®—å½“å‰åƒç´ çš„ç´¢å¼•ï¼Œå› ä¸ºæ¯ä¸ªåƒç´ æœ‰å››ä¸ªæ ·æœ¬ï¼Œæ‰€ä»¥ä¹˜ä»¥4
+            for (int k = 0; k < 4; k++) {//éå†åƒç´ çš„æ¯ä¸ªæ ·æœ¬
+                if (insideTriangle(i + a[k], j + a[k + 1], t.v)) {//å¦‚æœæ ·æœ¬åœ¨ä¸‰è§’å½¢å†…
                     // If so, use the following code to get the interpolated z value.
                     std::tie(alpha, beta, gamma) = computeBarycentric2D(i + a[k], j + a[k + 1], t.v);
-                    //ÏÂÃæÈıĞĞ´úÂë½øĞĞµÄÊÇÍ¸ÊÓĞ£Õı²åÖµ£¨¸Ğ¾õÓĞµãÎÊÌâ£©
+                    //ä¸‹é¢ä¸‰è¡Œä»£ç è¿›è¡Œçš„æ˜¯é€è§†æ ¡æ­£æ’å€¼ï¼ˆæ„Ÿè§‰æœ‰ç‚¹é—®é¢˜ï¼‰
                     float w_reciprocal = 1.0 / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
                     float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
                     z_interpolated *= w_reciprocal;
-                    //ÏÂÃæ¾ÍÊÇMSAAÖ÷Òª²½Öè£¬ÔÚÒ»¸ö2x2´óĞ¡µÄ»º³åÇøÀï½øĞĞ²åÖµºó½µ²ÉÑù¸øÔ­Í¼¸³Öµ
-                    if (-z_interpolated < depth_sample[eid + k]) {//Èç¹û¸ÃÑù±¾µÄÉî¶È¸üĞ¡£¬¸üĞÂÑù±¾Éî¶È¡¢ÑÕÉ«»º³åÇø£¨°ÑzÖµ»»³ÉÕıÊı±È½Ï£©
+                    
+                    if (-z_interpolated < depth_sample[eid + k]) {//å¦‚æœè¯¥æ ·æœ¬çš„æ·±åº¦æ›´å°ï¼Œæ›´æ–°æ ·æœ¬æ·±åº¦ã€é¢œè‰²ç¼“å†²åŒºï¼ˆæŠŠzå€¼æ¢æˆæ­£æ•°æ¯”è¾ƒï¼‰
                         depth_sample[eid + k] = -z_interpolated;
-                        frame_sample[eid + k] = t.getColor() / 4;//ÕâÀïÖ±½Ó³ıÒÔ4£¬Ö®ºó¾Í²»ÓÃÔÙ³ıÁË£¬Ö±½ÓËÄ¸öÑù±¾ÑÕÉ«Ïà¼Ó¼´¿É±£Ö¤¹âÇ¿²»±ä
+                        frame_sample[eid + k] = t.getColor() / 4;//è¿™é‡Œç›´æ¥é™¤ä»¥4ï¼Œä¹‹åå°±ä¸ç”¨å†é™¤äº†ï¼Œç›´æ¥å››ä¸ªæ ·æœ¬é¢œè‰²ç›¸åŠ å³å¯ä¿è¯å…‰å¼ºä¸å˜
                     }
                     mindep = std::min(depth_sample[eid + k], mindep);
                 }
             }
             // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
+            //ä¸‹é¢å°±æ˜¯MSAAä¸»è¦æ€è·¯ï¼Œåœ¨ä¸€ä¸ª2x2å¤§å°çš„ç¼“å†²åŒºé‡Œè¿›è¡ŒåŠ å’Œåé™é‡‡æ ·ç»™åŸå›¾èµ‹å€¼
             color = frame_sample[eid] + frame_sample[eid + 1] + frame_sample[eid + 2] + frame_sample[eid + 3];
             set_pixel({ i,j,1 }, color);
             depth_buf[get_index(i, j)] = std::min(depth_buf[get_index(i, j)], mindep);
@@ -153,34 +154,34 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     }
 }
 
-////ÎŞ¿¹¾â³İ´¦Àí
+////æ— æŠ—é”¯é½¿å¤„ç†
 //void rst::rasterizer::rasterize_triangle(const Triangle& t) {
-//    auto v = t.toVector4();//vÊÇÈı½ÇĞÎµÄ¶¥µã
-//    //alpha¡¢beta¡¢gamma·Ö±ğ±íÊ¾Èı½ÇĞÎ¶¥µãµÄÈ¨ÖØ£¬lmin¡¢rmax¡¢tmax¡¢bmin·Ö±ğ±íÊ¾Èı½ÇĞÎµÄ°üÎ§ºĞ±ß½ç×ø±ê
+//    auto v = t.toVector4();//væ˜¯ä¸‰è§’å½¢çš„é¡¶ç‚¹
+//    //alphaã€betaã€gammaåˆ†åˆ«è¡¨ç¤ºä¸‰è§’å½¢é¡¶ç‚¹çš„æƒé‡ï¼Œlminã€rmaxã€tmaxã€bminåˆ†åˆ«è¡¨ç¤ºä¸‰è§’å½¢çš„åŒ…å›´ç›’è¾¹ç•Œåæ ‡
 //    float alpha, beta, gamma, lmin = INT_MAX, rmax = INT_MIN, tmax = INT_MIN, bmin = INT_MAX;
 //    // TODO : Find out the bounding box of current triangle.
-//    for (auto& k : v) {//ÕÒµ½bounding boxµÄ±ß½ç×ø±ê
+//    for (auto& k : v) {//æ‰¾åˆ°bounding boxçš„è¾¹ç•Œåæ ‡
 //        lmin = int(std::min(lmin, k.x()));
 //        rmax = std::max(rmax, k.x()); rmax = rmax == int(rmax) ? int(rmax) - 1 : rmax;
 //        tmax = std::max(tmax, k.y()); tmax = tmax == int(tmax) ? int(tmax) - 1 : tmax;
 //        bmin = int(std::min(bmin, k.y()));
 //    }
 //    // iterate through the pixel and find if the current pixel is inside the triangle
-//    for (float i = lmin; i <= rmax; i++) {//±éÀúbounding boxÏñËØ
+//    for (float i = lmin; i <= rmax; i++) {//éå†bounding boxåƒç´ 
 //        for (float j = bmin; j <= tmax; j++) {
-//            if (insideTriangle(i, j, t.v)) {//Èç¹ûÔÚÈı½ÇĞÎÄÚ
+//            if (insideTriangle(i, j, t.v)) {//å¦‚æœåœ¨ä¸‰è§’å½¢å†…
 //                // If so, use the following code to get the interpolated z value.
-//                //std::tie()¿ÉÒÔ½«¶à¸ö±äÁ¿°ó¶¨µ½Ò»¸öÔª×éÖĞ£¬´Ó¶ø¿ÉÒÔ½«º¯ÊıµÄ¶à¸ö·µ»ØÖµ¸³Öµ¸ø¶à¸ö±äÁ¿
-//                std::tie(alpha, beta, gamma) = computeBarycentric2D(i + 0.5, j + 0.5, t.v);//¶Ôµ±Ç°ÏñËØ×ø±êzÖµ²åÖµ
-//                //Í¸ÊÓĞ£Õı²åÖµ
+//                //std::tie()å¯ä»¥å°†å¤šä¸ªå˜é‡ç»‘å®šåˆ°ä¸€ä¸ªå…ƒç»„ä¸­ï¼Œä»è€Œå¯ä»¥å°†å‡½æ•°çš„å¤šä¸ªè¿”å›å€¼èµ‹å€¼ç»™å¤šä¸ªå˜é‡
+//                std::tie(alpha, beta, gamma) = computeBarycentric2D(i + 0.5, j + 0.5, t.v);//å¯¹å½“å‰åƒç´ åæ ‡zå€¼æ’å€¼
+//                //é€è§†æ ¡æ­£æ’å€¼
 //                float w_reciprocal = 1.0 / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
 //                float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
 //                z_interpolated *= w_reciprocal;
 // 
-//                if (-z_interpolated < depth_buf[get_index(i, j)]) {//Èç¹ûµ±Ç°zÖµ±ÈÏñËØzÖµĞ¡£¨ÕâÀïÊÇ°ÑzÖµ»»³ÉÕıÊı±È½ÏµÄ£©
+//                if (-z_interpolated < depth_buf[get_index(i, j)]) {//å¦‚æœå½“å‰zå€¼æ¯”åƒç´ zå€¼å°ï¼ˆè¿™é‡Œæ˜¯æŠŠzå€¼æ¢æˆæ­£æ•°æ¯”è¾ƒçš„ï¼‰
 //                    // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
 //                    set_pixel({ i,j,1 }, t.getColor());
-//                    depth_buf[get_index(i, j)] = -z_interpolated;//ÉèÖÃÏñËØÑÕÉ«£¬ĞŞ¸ÄÏñËØµ±Ç°Éî¶È   
+//                    depth_buf[get_index(i, j)] = -z_interpolated;//è®¾ç½®åƒç´ é¢œè‰²ï¼Œä¿®æ”¹åƒç´ å½“å‰æ·±åº¦   
 //                }
 //            }
 //        }
@@ -201,7 +202,7 @@ void rst::rasterizer::set_projection(const Eigen::Matrix4f& p)
 {
     projection = p;
 }
-//³õÊ¼»¯Ñù±¾Éî¶È¡¢ÑÕÉ«»º³åÇø
+//åˆå§‹åŒ–æ ·æœ¬æ·±åº¦ã€é¢œè‰²ç¼“å†²åŒº
 void rst::rasterizer::clear(rst::Buffers buff)
 {
     if ((buff & rst::Buffers::Color) == rst::Buffers::Color)
@@ -215,15 +216,15 @@ void rst::rasterizer::clear(rst::Buffers buff)
         std::fill(depth_sample.begin(), depth_sample.end(), std::numeric_limits<float>::infinity());
     }
 }
-//¶¨ÒåÑù±¾Éî¶È¡¢ÑÕÉ«»º³åÇø´óĞ¡
+//å®šä¹‰æ ·æœ¬æ·±åº¦ã€é¢œè‰²ç¼“å†²åŒºå¤§å°
 rst::rasterizer::rasterizer(int w, int h) : width(w), height(h)
 {
-    frame_buf.resize(w * h);//ÎŞ¿¹¾â³İ
+    frame_buf.resize(w * h);//æ— æŠ—é”¯é½¿
     depth_buf.resize(w * h);
-    frame_sample.resize(w * h * 4);//MSAAµÄ2x2²ÉÑù
+    frame_sample.resize(w * h * 4);//MSAAçš„2x2é‡‡æ ·
     depth_sample.resize(w * h * 4);
 }
-//¼ÆËãË÷ÒıÊı
+//è®¡ç®—ç´¢å¼•æ•°
 int rst::rasterizer::get_index(int x, int y)
 {
     return (height-1-y)*width + x;
@@ -234,5 +235,5 @@ void rst::rasterizer::set_pixel(const Eigen::Vector3f& point, const Eigen::Vecto
     //old index: auto ind = point.y() + point.x() * width;
     auto ind = (height-1-point.y())*width + point.x();
     frame_buf[ind] = color;
-    //ÕâÀï×¢ÊÍµôµÄÓ¦¸ÃÊÇ±éÀú´ÎĞò²»Í¬£¬ÓÃoldÅÜ³öÀ´ÊÇ´¹Ö±µÄ
+    //è¿™é‡Œæ³¨é‡Šæ‰çš„åº”è¯¥æ˜¯éå†æ¬¡åºä¸åŒï¼Œç”¨oldè·‘å‡ºæ¥æ˜¯å‚ç›´çš„
 }
